@@ -1,0 +1,36 @@
+language: minimal
+dist: xenial
+addons:
+  apt:
+    sources:
+      - docker-xenial
+
+env:
+  global:
+  #- DOCKER_COMPOSE_VERSION=1.4.2
+  #- DOCKER_USERNAME=8ear
+  #- DOCKER_PASSWORD=Changeme!
+  #- DOCKER_REPO_NAME=8ear/postal
+  - DOCKER_REPO_TAG=$TRAVIS_COMMIT
+
+before_install:
+  # Find all .sh shellscripts and check it against shellcheck
+    - find . -path "*.sh" -type f -print -exec shellcheck {} +
+
+before_script:
+# Build Docker Container
+- docker build 
+      --build-arg VCS_REF="$TRAVIS_COMMIT" 
+      --build-arg GIT_REPO="https://github.com/$TRAVIS_REPO_SLUG" 
+      --build-arg BUILD_DATE="$(date -u +"%Y-%m-%d")"
+      -t "$DOCKER_REPO_NAME:latest"
+      -t "$DOCKER_REPO_NAME:$DOCKER_REPO_TAG"
+      ".docker/"
+
+script:
+# Login to docker
+- echo "DOCKER_PASSWORD"| docker login -u $DOCKER_USERNAME --password-stdin
+
+# Push Docker Container
+- docker push "$DOCKER_REPO_NAME:latest"
+- docker push "$DOCKER_REPO_NAME:$DOCKER_REPO_TAG"

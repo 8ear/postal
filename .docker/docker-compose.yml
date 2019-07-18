@@ -1,0 +1,60 @@
+version: "2"
+
+volumes:
+  vol_postal_static_assets:
+  vol_mysql_data:
+  vol_postal_config:
+
+services:
+  postal:
+    build: .
+    ports:
+      - 25:25
+    depends_on:
+      - mysql
+      - rabbitmq
+    volumes:
+      - vol_postal_static_assets:/opt/postal/public
+      - vol_postal_config:/opt/postal/config
+    environment:
+    - "MYSQL_DATABASE=postal"
+    - "MYSQL_HOST=mysql"
+    - "MYSQL_PASSWORD=Changeme!"
+    - "MYSQL_USER=postal"
+    - "RABBITMQ_USER=guest"
+    - "RABBITMQ_DEFAULT_PASS=guest"
+    - "RABBITMQ_DEFAULT_VHOST=postal"
+    - "RABBITMQ_HOST=rabbitmq"
+    env_file: docker-compose.env
+  
+  mysql:
+    image: mariadb:10
+    volumes:
+      - vol_mysql_data:/var/lib/mysql
+    environment:
+      - "MYSQL_ROOT_PASSWORD=ChangeMe!"
+      - MYSQL_DATABASE=postal
+      - MYSQL_USER=postal
+      - MYSQL_PASSWORD=ChangeMe!
+    env_file: docker-compose.env
+  
+  rabbitmq:
+    image: rabbitmq:3-alpine
+    container_name: postal_rabbitmq
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+      - RABBITMQ_DEFAULT_VHOST=/postal
+    env_file: docker-compose.env
+  
+  nginx:
+    image: nginx:alpine
+    ports:
+      - 80:80
+    depends_on:
+      - postal
+    volumes:
+      - ./src/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - vol_postal_static_assets:/opt/postal/public:ro
+
+

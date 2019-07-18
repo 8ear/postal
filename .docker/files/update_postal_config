@@ -1,0 +1,50 @@
+#!/bin/sh
+set -eu
+
+
+change(){
+    FILE="/opt/postal/config/postal.yml"
+    SEARCH_KEY="$1"
+    OLD_VALUE="$2"
+    NEW_VALUE="$3"
+    sed -i -e "/$SEARCH_KEY:/!b" -e ':a' -e "s/$OLD_VALUE/$NEW_VALUE/;t trail" -e 'n;ba' -e ':trail' -e 'n;btrail' $FILE
+}
+
+
+change "web" "host:.*" "host: $WEB_HOST"
+change "web" "protocol:.*" "protocol: $WEB_PROTOCOL"
+
+change "fast_server" "enabled:.*" "enabled: $FAST_SERVER_ENABLED"
+change "fast_server" "bind_address:.*" "bind_address: $FAST_SERVER_BIND_ADDRESS"
+
+change "general" "use_ip_pools:.*" "use_ip_pools: $GENERAL_USE_IP_POOLS"
+
+change "main_db" "host:.*" "host: $MYSQL_HOST"
+change "main_db" "username:.*" "username: $MYSQL_USER"
+change "main_db" "password:.*" "password: $MYSQL_PASSWORD"
+change "main_db" "database:.*" "database: $MYSQL_DB"
+
+change "message_db" "host:.*" "host: $MYSQL_HOST"
+change "message_db" "username:.*" "username: $MYSQL_USER"
+change "message_db" "password:.*" "password: $MYSQL_PASSWORD"
+
+change "rabbitmq" "host:.*" "host: $RABBITMQ_HOST"
+change "rabbitmq" "username:.*" "username: $RABBITMQ_DEFAULT_USER"
+change "rabbitmq" "password:.*" "password: $RABBITMQ_DEFAULT_PASS"
+change "rabbitmq" "vhost:.*" "vhost: $RABBITMQ_DEFAULT_VHOST"
+
+#   mx_records:
+#     $DNS_MX
+#   smtp_server_hostname: $DNS_SMTP
+#   spf_include: $DNS_SPF
+#   return_path: $DNS_RP
+#   route_domain: $DNS_ROUTES
+#   track_domain: $DNS_TRACK
+
+change "smtp" "host:.*" "host: $SMTP_HOST"
+change "smtp" "port:.*" "port: $SMTP_PORT"
+change "smtp" "from_name:.*" "from_name: $SMTP_FROM_NAME"
+change "smtp" "from_address:.*" "from_address: $SMTP_FROM_ADDRESS"
+
+#   username: # Complete when Postal is running and you can
+#   password: # generate the credentials within the interface.

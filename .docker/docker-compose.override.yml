@@ -1,0 +1,6 @@
+version: "2"
+
+services:
+  postal:
+    image: 8ear/postal
+    hostname: mail.haeckl-it.de
